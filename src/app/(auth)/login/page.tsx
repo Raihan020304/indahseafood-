@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -17,7 +17,7 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -26,15 +26,16 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginValues>({ resolver: zodResolver(loginSchema) });
+  } = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+  });
 
   async function onSubmit(values: LoginValues) {
     setLoading(true);
     const supabase = createSupabaseBrowserClient();
-    
-    // 1. Proses Autentikasi ke Supabase Auth
+
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: values.email.trim(), // Membuang spasi tidak sengaja di ujung teks
+      email: values.email.trim(),
       password: values.password,
     });
 
@@ -49,7 +50,6 @@ export default function LoginPage() {
     }
 
     try {
-      // 2. Ambil data role dari tabel public.users berdasarkan ID user yang sukses login
       const { data: userProfile, error: profileError } = await supabase
         .from("users")
         .select("role")
@@ -57,7 +57,6 @@ export default function LoginPage() {
         .single();
 
       if (profileError || !userProfile) {
-        // Jika profile belum terbuat di public.users, default lempar ke halaman utama toko
         toast.success("Berhasil masuk!");
         router.push("/");
         router.refresh();
@@ -66,18 +65,18 @@ export default function LoginPage() {
 
       toast.success("Berhasil masuk!");
 
-      // 3. Cek parameter redirect, jika tidak ada, arahkan otomatis berdasarkan Role
       const hasRedirect = searchParams.get("redirect");
+
       if (hasRedirect) {
         router.push(hasRedirect);
       } else if (userProfile.role === "admin") {
-        router.push("/admin"); // Jika admin, arahkan ke dashboard admin
+        router.push("/admin");
       } else {
-        router.push("/"); // Jika customer biasa, ke toko utama
+        router.push("/");
       }
-      
+
       router.refresh();
-    } catch (err) {
+    } catch {
       setLoading(false);
       toast.error("Gagal memvalidasi role pengguna.");
     }
@@ -85,10 +84,16 @@ export default function LoginPage() {
 
   return (
     <div>
-      <h1 className="font-display text-xl font-bold text-ocean-900">Masuk ke Akun</h1>
+      <h1 className="font-display text-xl font-bold text-ocean-900">
+        Masuk ke Akun
+      </h1>
+
       <p className="mt-1 text-sm text-ocean-500">
         Belum punya akun?{" "}
-        <Link href="/register" className="font-semibold text-ocean-700 hover:underline">
+        <Link
+          href="/register"
+          className="font-semibold text-ocean-700 hover:underline"
+        >
           Daftar di sini
         </Link>
       </p>
@@ -96,20 +101,56 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
         <div>
           <label className="text-sm font-medium text-ocean-700">Email</label>
-          <input {...register("email")} type="email" className="input-field mt-1" placeholder="nama@email.com" />
-          {errors.email && <p className="mt-1 text-xs text-coral-600">{errors.email.message}</p>}
+          <input
+            {...register("email")}
+            type="email"
+            className="input-field mt-1"
+            placeholder="nama@email.com"
+          />
+          {errors.email && (
+            <p className="mt-1 text-xs text-coral-600">
+              {errors.email.message}
+            </p>
+          )}
         </div>
 
         <div>
-          <label className="text-sm font-medium text-ocean-700">Password</label>
-          <input {...register("password")} type="password" className="input-field mt-1" placeholder="••••••••" />
-          {errors.password && <p className="mt-1 text-xs text-coral-600">{errors.password.message}</p>}
+          <label className="text-sm font-medium text-ocean-700">
+            Password
+          </label>
+          <input
+            {...register("password")}
+            type="password"
+            className="input-field mt-1"
+            placeholder="••••••••"
+          />
+          {errors.password && (
+            <p className="mt-1 text-xs text-coral-600">
+              {errors.password.message}
+            </p>
+          )}
         </div>
 
-        <button type="submit" disabled={loading} className="btn-primary w-full">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Masuk"}
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary w-full"
+        >
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            "Masuk"
+          )}
         </button>
       </form>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

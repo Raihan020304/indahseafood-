@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-inter: "Inter", system-ui, sans-serif;
+  --font-poppins: "Poppins", system-ui, sans-serif;
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-ice-50 text-ocean-950 antialiased;
+}
+
+.container-app {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-ocean-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ocean-700 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-ocean-200 bg-white px-5 py-2.5 text-sm font-semibold text-ocean-700 transition hover:bg-ocean-50 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.btn-coral {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-coral-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-coral-600 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.input-field {
+  @apply w-full rounded-xl border border-ocean-200 bg-white px-4 py-2.5 text-sm text-ocean-950 placeholder:text-ocean-400 focus:border-ocean-500 focus:outline-none focus:ring-2 focus:ring-ocean-100;
+}
+
+.card {
+  @apply rounded-xl2 border border-ocean-100 bg-white shadow-card transition hover:shadow-card-hover;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-ocean-200;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
